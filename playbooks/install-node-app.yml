@@ -1,0 +1,42 @@
+- name: "Instalar app node"
+  hosts: aula
+  become: yes #usar root - sudo
+  vars:
+    path_app: /usr/app
+    app_name: "nome app do zip"
+  tasks:
+    - name: "1 - Criar diretorio"
+      file:
+        path: "{{path_app}}"
+        state: directory
+        mode: '0755'
+      register: create_dir   
+
+    - name: "2 - Instalar unzip"
+      package:
+        name: 
+          - unzip
+        state: present
+      register: install_unzip
+
+    - name: "3 - Fazer download e descompactar na diretorio"
+      unarchive:
+        src: https://github.com/bgsouza/app_node2/archive/master.zip
+        dest: "{{path_app}}"
+        remote_src: yes
+      when: 
+        - create_dir is success
+        - install_unzip is success  
+      register: download_unzip  
+
+    - name: "4 - Compilar app" #Acessar a pasta e npm install
+      npm:
+        #name: coffee-script #Precisa?
+        path: "{{path_app}}"
+      register: npm_install
+
+    - name: "5 - Gerenciador node pm2" #instalar e start
+      command: pm2 start {{path_app}}/{{app_name}}/app.js
+      register: node_pm2
+
+    #- name: "6 - Rodar app"
