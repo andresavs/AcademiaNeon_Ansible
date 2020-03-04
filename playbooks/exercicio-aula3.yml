@@ -1,0 +1,29 @@
+- name: Exercicio Aula 3
+  #hosts: all - Para usar o --limit precisa estar all
+  hosts: aula
+  become: yes
+  gather_facts: yes
+  vars:
+    file_src: config.json
+    file_dest: /usr/src
+    owner: root
+    group: root
+    mode: 0777
+  tasks:
+    - name: Upload file
+      template:
+        src:  "{{file_src}}"
+        dest: "{{file_dest}}"
+        owner: "{{owner}}"
+        group: "{{group}}"
+        mode: "{{mode}}"
+      register: upload_file
+
+    - name: alterando conteudo arquivo
+      replace:
+        path: "{{file_dest}}/{{file_src}}"
+        regexp: "development"
+        replace: "production"
+        backup: yes
+      when: upload_file is success      
+      
