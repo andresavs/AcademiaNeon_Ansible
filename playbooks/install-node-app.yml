@@ -3,7 +3,7 @@
   become: yes #usar root - sudo
   vars:
     path_app: /usr/app
-    app_name: "app.js"
+    app_name: app_node2-master
   tasks:
     - name: "1 - Criar diretorio"
       file:
@@ -31,14 +31,19 @@
 
     - name: "4 - Compilar app" #Acessar a pasta e npm install
       npm:
-        #name: coffee-script #Precisa?
-        path: "{{path_app}}/{{app_name}}"
+        path: "{{path_app}}/{{app_name}}" 
       when: download_unzip is success  
-      register: npm_install
+      register: compilar_app  
+
+    - name: "4.1 - Install pm2"
+      npm:
+        name: pm2
+        global: yes
+      register: npm_install_pm2  
 
     - name: "5 - Gerenciador node pm2" #instalar e start
-      command: pm2 start "{{path_app}}/{{app_name}}"
-      when: npm_install is success
+      command: pm2 start "{{path_app}}/{{app_name}}/app.js"
+      when: npm_install_pm2 is success
       register: node_pm2
 
     #- name: "6 - Rodar app"
