@@ -5,21 +5,21 @@
     path_app: /usr/app
     app_name: app_node2-master
   tasks:
-    - name: "1 - Criar diretorio"
+    - name: Criar diretorio
       file:
         path: "{{path_app}}"
         state: directory
         mode: '0755'
       register: create_dir   
 
-    - name: "2 - Instalar unzip"
+    - name: Instalar unzip
       package:
         name: 
           - unzip
         state: present
       register: install_unzip
 
-    - name: "3 - Fazer download e descompactar na diretorio"
+    - name: Fazer download e descompactar na diretorio
       unarchive:
         src: https://github.com/bgsouza/app_node2/archive/master.zip
         dest: "{{path_app}}"
@@ -29,21 +29,19 @@
         - install_unzip is success  
       register: download_unzip  
 
-    - name: "4 - Compilar app" #Acessar a pasta e npm install
+    - name: Compilar app - Instalar packages based on package.json
       npm:
         path: "{{path_app}}/{{app_name}}" 
       when: download_unzip is success  
       register: compilar_app  
 
-    - name: "4.1 - Install pm2"
+    - name: Install pm2
       npm:
         name: pm2
         global: yes
       register: npm_install_pm2  
 
-    - name: "5 - Gerenciador node pm2" #instalar e start
+    - name: Start aplicação
       command: pm2 start "{{path_app}}/{{app_name}}/app.js"
       when: npm_install_pm2 is success
-      register: node_pm2
-
-    #- name: "6 - Rodar app"
+      register: start_app
